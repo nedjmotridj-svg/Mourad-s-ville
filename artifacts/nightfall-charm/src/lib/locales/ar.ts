@@ -93,6 +93,8 @@ export const ar: Dictionary = {
     packAgrees: "القطيع متفق",
     disagreement: "خلاف — الأم الذئبة تحسم",
     infectPlayer: "عدوى {name} (مرة واحدة في اللعبة)",
+    noirSoloVictimTitle: "اختر الضحية",
+    noirSoloConfirm: "الذئب الأسود يضرب",
     muteTitle: "فرض الصمت (اختياري)",
     muteUnavailable: "قدرة الإسكات متاحة ابتداءً من الليلة الثانية.",
     bearNeighbors: "الجاران المباشران (معلومة للقائد)",

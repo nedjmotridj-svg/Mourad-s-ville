@@ -10,9 +10,13 @@ description: Key design decisions for gameplay upgrades (Loup Bavard modal, GM v
   - Non → `executeTalkativeWolfAndSkip(state)` → kills bavard, logs it, skips to next night.
 - `executeTalkativeWolfAndSkip` is exported from `engine.ts`. It clones state, calls `killPlayer`, pushes a log entry, then calls `checkVictory → startNight`.
 
-## Solo Loup Noir kill (Phase 2)
-- In `buildNightSteps`, after the main wolf-pack step, a second step with `roleId: "loup-garou"` is pushed when Loup Noir is the sole active werewolf.
-- Reuses the existing `submitStep` switch branch so `attackedId` is set without new engine branching.
+## Solo Loup Noir — combined step (Phase 2, updated)
+- When Loup Noir is the sole active werewolf, `buildNightSteps` pushes a **single combined step** with `roleId: "loup-noir"`, `mode: "blackwolf"`, `soloKill: true`.
+- `Step` interface has `soloKill?: boolean` flag to distinguish combined vs normal blackwolf step.
+- NightPanel `blackwolf` mode checks `step.soloKill`: if true, shows a victim picker (`sel` state) at top; contaminate checkbox unlocks once a victim is selected; silence picker below; button sends `{ targetId: sel[0], yes: infect, muteId }`.
+- `submitStep` `loup-noir` case: if `payload.targetId && !s.round.attackedId`, sets `s.round.attackedId = payload.targetId` (solo kill) before contaminate/silence logic.
+- New locale keys: `noirSoloVictimTitle` ("Désigner la victime") and `noirSoloConfirm` ("Loup Noir frappe") in FR/EN/AR.
+- **Why:** merging kill + special abilities into one step is cleaner UX than two sequential steps for solo Loup Noir.
 
 ## GM-driven voting (Phase 2)
 - VotePanel tally (+/−) is now **display-only** — no auto-compute of winner.

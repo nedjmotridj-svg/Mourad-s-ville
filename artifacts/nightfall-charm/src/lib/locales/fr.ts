@@ -102,6 +102,8 @@ export const fr = {
     packAgrees: "La meute est d'accord",
     disagreement: "Désaccord — la Matriarche tranche",
     infectPlayer: "Contaminer {name} (1× par partie)",
+    noirSoloVictimTitle: "Désigner la victime",
+    noirSoloConfirm: "Loup Noir frappe",
     muteTitle: "Imposer le silence (optionnel)",
     muteUnavailable: "Le pouvoir de silence est disponible à partir de la nuit 2.",
     bearNeighbors: "Voisins directs (info Maître du Jeu)",

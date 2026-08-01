@@ -83,6 +83,8 @@ export interface Step {
     | "blackwolf";
   optional?: boolean;
   actorId?: string;
+  /** Loup Noir est le seul loup actif — la sélection de victime est intégrée à cette étape. */
+  soloKill?: boolean;
 }
 
 export interface RoundState {
@@ -267,7 +269,7 @@ export function buildNightSteps(s: GameState): Step[] {
     "wolves",
   );
 
-  // Loup Noir seul dans la meute → lui accorde la capacité de tuer comme la meute.
+  // Loup Noir : étape unique combinant kill (si seul) + contamination + silence.
   {
     const blackWolf = s.players.find(
       (p) =>
@@ -277,6 +279,7 @@ export function buildNightSteps(s: GameState): Step[] {
         !p.powersDisabled,
     );
     if (blackWolf) {
+      const packStepExists = steps.some((st) => st.mode === "wolves");
       const otherActiveWolves = s.players.filter(
         (p) =>
           p.alive &&
@@ -285,31 +288,24 @@ export function buildNightSteps(s: GameState): Step[] {
           !p.disabledNightAbility &&
           !p.powersDisabled,
       );
-      const packStepExists = steps.some((st) => st.mode === "wolves");
-      if (otherActiveWolves.length === 0 && !packStepExists) {
-        steps.push({
-          key: `${s.night}-loup-noir-solo`,
-          // Reuse loup-garou switch branch so attackedId gets set correctly.
-          roleId: "loup-garou",
-          title: "Loup Noir — Meute Solitaire",
-          prompt:
-            "Le Loup Noir est seul dans la meute : il désigne sa victime.",
-          mode: "wolves",
-          optional: false,
-          actorId: blackWolf.id,
-        });
+      const soloKill = otherActiveWolves.length === 0 && !packStepExists;
+      if (soloKill) {
         s.log.push(`Nuit ${s.night} : Loup Noir seul — capacité de tuer accordée.`);
       }
+      steps.push({
+        key: `${s.night}-loup-noir`,
+        roleId: "loup-noir",
+        title: soloKill ? "Loup Noir — Meute Solitaire" : "Loup Noir",
+        prompt: soloKill
+          ? "Seul dans la meute : désigne ta victime, puis utilise tes pouvoirs si disponibles."
+          : "Contamine la victime (une fois par partie) et/ou impose le silence à un joueur.",
+        mode: "blackwolf",
+        optional: !soloKill,
+        actorId: blackWolf.id,
+        soloKill,
+      });
     }
   }
-
-  push(
-    "loup-noir",
-    "Loup Noir",
-    "Contamine la victime (une fois par partie) et/ou impose le silence à un joueur.",
-    "blackwolf",
-    true,
-  );
   if (s.night % 2 === 0) {
     push(
       "loup-blanc",
@@ -556,6 +552,14 @@ export function submitStep(state: GameState, payload: StepPayload): GameState {
       break;
     }
     case "loup-noir": {
+      // Solo kill: Loup Noir désigne lui-même sa victime dans son étape combinée.
+      if (payload.targetId && !s.round.attackedId) {
+        s.round.attackedId = payload.targetId;
+        const soloVictim = s.players.find((p) => p.id === payload.targetId);
+        if (soloVictim) {
+          s.log.push(`Le Loup Noir dévore ${soloVictim.name} (meute solitaire).`);
+        }
+      }
       const notes: string[] = [];
       if (payload.yes && s.round.attackedId && !actor.abilityUsed) {
         const victim = s.players.find((p) => p.id === s.round.attackedId)!;

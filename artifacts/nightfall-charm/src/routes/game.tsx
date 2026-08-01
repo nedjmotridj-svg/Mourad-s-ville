@@ -570,18 +570,47 @@ function NightPanel({
           </div>
         ) : step.mode === "blackwolf" ? (
           <div className="space-y-3">
-            {state.round.attackedId && !actor.abilityUsed && (
-              <label className="flex items-center gap-3 rounded-xl border border-border p-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={infect}
-                  onChange={(e) => setInfect(e.target.checked)}
+            {/* ── Solo kill: victim picker (only when Loup Noir is the last wolf) ── */}
+            {step.soloKill ? (
+              <>
+                <p className="text-xs tracking-widest text-primary uppercase">
+                  {t("noirSoloVictimTitle")}
+                </p>
+                <PlayerPicker
+                  players={candidates.filter((p) => p.id !== actor.id)}
+                  selected={sel}
+                  onToggle={toggle}
                 />
-                {t("infectPlayer", {
-                  name: state.players.find((p) => p.id === state.round.attackedId)?.name ?? "",
-                })}
-              </label>
+                {/* Contaminate: available once victim is picked and ability not yet used */}
+                {sel.length === 1 && !actor.abilityUsed && (
+                  <label className="flex items-center gap-3 rounded-xl border border-border p-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={infect}
+                      onChange={(e) => setInfect(e.target.checked)}
+                    />
+                    {t("infectPlayer", {
+                      name: state.players.find((p) => p.id === sel[0])?.name ?? "",
+                    })}
+                  </label>
+                )}
+              </>
+            ) : (
+              /* Normal flow: contaminate uses attackedId already set by the pack */
+              state.round.attackedId && !actor.abilityUsed && (
+                <label className="flex items-center gap-3 rounded-xl border border-border p-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={infect}
+                    onChange={(e) => setInfect(e.target.checked)}
+                  />
+                  {t("infectPlayer", {
+                    name: state.players.find((p) => p.id === state.round.attackedId)?.name ?? "",
+                  })}
+                </label>
+              )
             )}
+            {/* ── Silence ── */}
             {state.night >= 2 ? (
               <>
                 <p className="text-xs tracking-widest text-primary uppercase">
@@ -599,10 +628,17 @@ function NightPanel({
               <p className="text-xs text-muted-foreground">{t("muteUnavailable")}</p>
             )}
             <button
-              onClick={() => send({ yes: infect, muteId: mute ?? undefined })}
-              className="w-full rounded-full bg-primary py-3 font-bold text-primary-foreground"
+              disabled={step.soloKill && sel.length !== 1}
+              onClick={() =>
+                send({
+                  targetId: step.soloKill ? sel[0] : undefined,
+                  yes: infect,
+                  muteId: mute ?? undefined,
+                })
+              }
+              className="w-full rounded-full bg-primary py-3 font-bold text-primary-foreground disabled:opacity-40"
             >
-              {t("validate")}
+              {step.soloKill ? t("noirSoloConfirm") : t("validate")}
             </button>
           </div>
         ) : step.mode === "bear" ? (

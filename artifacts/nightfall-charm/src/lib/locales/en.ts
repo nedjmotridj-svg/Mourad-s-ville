@@ -94,6 +94,8 @@ export const en: Dictionary = {
     packAgrees: "The pack agrees",
     disagreement: "Disagreement — the Matriarch decides",
     infectPlayer: "Infect {name} (once per game)",
+    noirSoloVictimTitle: "Choose a victim",
+    noirSoloConfirm: "Black Wolf strikes",
     muteTitle: "Impose silence (optional)",
     muteUnavailable: "The silence power is available from night 2 onwards.",
     bearNeighbors: "Direct neighbours (GM info)",
