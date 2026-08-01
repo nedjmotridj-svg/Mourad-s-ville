@@ -1,0 +1,1 @@
+- [Nightfall Oracle mechanics](nightfall-oracle-mechanics.md) — bavard modal in DawnPanel; GM-picker voting; history stack; Solo Loup Noir kill.
